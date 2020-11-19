@@ -8,12 +8,6 @@ var providerSchema = new mongoose.Schema({
     shopping: String,
     created_at: {type: Date, default: Date.now},
     update_at: {type: Date, default: Date.now},
-    supply: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
-        
-    }
-
 });
 
 providerSchema.index({'description': 'text', 'name': 'text'});

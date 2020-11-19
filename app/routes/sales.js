@@ -1,40 +1,37 @@
 var express = require('express');
 var router = express.Router();
-const Provider = require('../models/provider');
+const Sale = require('../models/sale');
 const withAuth = require('../../middlewares/auth');
-
-
 
 router.post('/', withAuth, async function(req, res) {
     try {
-        const { description, name, cnpj, shopping} = req.body;
-        var provider = new Provider({description: description, name: name, cnpj: cnpj, shopping: shopping, supply: supply});
-        await provider.save();
-        res.json(provider);
+        const { client, supply } = req.body;
+        var sale = new Sale({ client: client, supply: supply});
+        await sale.save();
+        res.json(sale);
     } catch (error) {
         res.status(401).send(error);
     }
 
 });
 
-router.get('/search', withAuth, async function(req, res) {
+router.get('/search', withAuth, async function(req, res) { 
     try {
         const { query } = req.query;
         const { id } = req.params;       
-        let providers = await Provider.find({ id }).find({ $text: {$search: query }})
-        res.json(providers);
+        let sales = await Sale.find({id}).find({ $text: {$search: query }})
+        res.json(sales);
 
     } catch (error) {
         res.json({error: error}).status(500)
     }
-    
 });
 
 router.get('/', withAuth, async function(req, res) {
     try {
         const { id } = req.params;
-        let providers = await Provider.find({ id })
-        res.send(providers)
+        let sales = await Sale.find({ id })
+        res.send(sales)
     } catch (error) {
         res.json({error: error}).status(500)
     }
@@ -42,14 +39,14 @@ router.get('/', withAuth, async function(req, res) {
 
 router.put('/:id', withAuth, async function(req, res) {
     try {
-        const { description, name, cnpj, shopping} = req.body;
+        const { client, supply} = req.body;
         const { id } = req.params;
-        var provider = await Provider.findOneAndUpdate(
+        var sale = await Sale.findOneAndUpdate(
             {_id: id},
-            {$set: {description: description, name: name, cnpj: cnpj, shopping: shopping}},
+            {$set: {client: client, supply: supply}},
             {upsert: true, 'new': true }   
         )
-        res.json(provider);
+        res.json(sale);
     } catch (error) {
         res.json({error: error}).status(500)
     }
@@ -59,12 +56,13 @@ router.delete('/:id', withAuth, async function(req, res) {
     
     try {
         const { id } = req.params;
-        var provider = await Provider.findById({_id: id})
-            await provider.delete();
+        var sale = await Sale.findById({_id: id})
+            await sale.delete();
             res.json({message: 'OK'}).status(204);   
     } catch (error) {
         res.json({error: error}).status(500)
         
     }
 });
+
 module.exports = router;

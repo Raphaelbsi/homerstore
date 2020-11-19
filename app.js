@@ -8,6 +8,7 @@ require ('./config/database')
 var usersRouter = require('./app/routes/users');
 var productsRouter = require('./app/routes/products');
 var providersRouter = require('./app/routes/providers')
+var salesRouter = require('./app/routes/sales');
 
 var app = express();
 
@@ -20,5 +21,7 @@ app.use(cors());
 app.use('/users', usersRouter);
 app.use('/products', productsRouter);
 app.use('/providers', providersRouter);
+app.use('/sales', salesRouter);
+
 
 module.exports = app;
