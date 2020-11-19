@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 const Product = require('../models/product');
 const withAuth = require('../../middlewares/auth');
-const product = require('../models/product');
+
 
 
 router.post('/', withAuth, async function(req, res) { 
@@ -20,7 +20,8 @@ router.post('/', withAuth, async function(req, res) {
 router.get('/search', withAuth, async function(req, res) {
     try {
         const { query } = req.query;
-        let products = await Product.find({ author: req.user._id }).find({ $text: {$search: query }})
+        const { id } = req.params;
+        let products = await Product.find({ id }).find({ $text: {$search: query }})
         res.json(products);
 
     } catch (error) {
@@ -82,19 +83,19 @@ router.delete('/:id', withAuth, async function(req, res) {
     try {
         const { id } = req.params;
         var product = await Product.findById({_id: id})
-        const is_owner = (user, product) => {
-            if(JSON.stringify(user._id) == JSON.stringify(product.author._id))
-              return true;
-            else
-              return false;
-            }
+        //const is_owner = (user, product) => {
+            //if(JSON.stringify(user._id) == JSON.stringify(product.author._id))
+             // return true;
+            //else
+             // return false;
+            //}
         
-        if(product && is_owner(req.user, product)) {
+        //if(product && is_owner(req.user, product)) {
             await product.delete();
             res.json({message: 'OK'}).status(204);   
-        }else{
-            res.json({error: 'Forbidden'}).status(403);
-        }
+        //}else{
+           // res.json({error: 'Forbidden'}).status(403);
+       // }
     } catch (error) {
         res.json({error: error}).status(500)
         
