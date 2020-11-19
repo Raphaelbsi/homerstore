@@ -29,7 +29,7 @@ router.post('/login', async function(req, res) {
         if(!same)
           res.status(401).json({error: 'Incorrect email or password'});
         else {
-          const token = jwt.sign({email}, secret, { expiresIn: '1d' });
+          const token = jwt.sign({email}, secret, { expiresIn: '10d' });
           res.json({user: user, token: token});
       }
       })

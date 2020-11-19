@@ -5,12 +5,9 @@ const withAuth = require('../../middlewares/auth');
 const product = require('../models/product');
 
 
-router.post('/', withAuth, async function(req, res) {
-    const { description, name, price, amount, min, max } = req.body;
-
-    
-
+router.post('/', withAuth, async function(req, res) { 
     try {
+        const { description, name, price, amount, min, max } = req.body;
         var product = new Product({description: description, name: name, price: price, amount: amount, min: min, max: max, author: req.user._id});
         await product.save();
         res.json(product);
@@ -21,7 +18,6 @@ router.post('/', withAuth, async function(req, res) {
 });
 
 router.get('/search', withAuth, async function(req, res) {
-    
     try {
         const { query } = req.query;
         let products = await Product.find({ author: req.user._id }).find({ $text: {$search: query }})
@@ -38,17 +34,17 @@ router.get('/:id', withAuth, async function(req, res) {
     try {
         const { id } = req.params;
         let product = await Product.findById(id)
-        const is_owner = (user, product) => {
+        //const is_owner = (user, product) => {
             
-            if(JSON.stringify(user._id) == JSON.stringify(product.author._id))
-              return true;
-            else
-              return false;
-            }
-            if(is_owner(req.user, product))
+            //if(JSON.stringify(user._id) == JSON.stringify(product.author._id))
+            //  return true;
+            //else
+              //return false;
+            //}
+            //if(is_owner(req.user, product))
                 res.json(product);
-            else
-                res.json({error: error}).status(500);
+            //else
+                //res.json({error: error}).status(500);
 
     } catch (error) {
                     res.send(error).status(500)
@@ -58,7 +54,8 @@ router.get('/:id', withAuth, async function(req, res) {
 
 router.get('/', withAuth, async function(req, res) {
     try {
-        let products = await Product.find({author: req.user._id })
+        const { id } = req.params;
+        let products = await Product.find({ id })
         res.send(products)
     } catch (error) {
         res.json({error: error}).status(500)

@@ -12,7 +12,7 @@ var productSchema = new mongoose.Schema({
     update_at: {type: Date, default: Date.now},
     author: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'user',
+        ref: 'User',
         required: true
     }
     
