@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const Product = require('../models/product');
-const withAuth = require('../../middlewares/auth');
+//const withAuth = require('../../middlewares/auth');
 const mongoose = require("mongoose");
 
 
@@ -100,8 +100,10 @@ router.get("/", (req, res, next) => {
   router.patch("/:productId", (req, res, next) => {
     const id = req.params.productId;
     const updateOps = {};
+
     for (const ops of req.body) {
       updateOps[ops.propName] = ops.value;
+      console.log(updateOps);
     }
     Product.update({ _id: id }, { $set: updateOps })
       .exec()
