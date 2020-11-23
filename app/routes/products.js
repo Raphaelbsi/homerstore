@@ -2,105 +2,146 @@ var express = require('express');
 var router = express.Router();
 const Product = require('../models/product');
 const withAuth = require('../../middlewares/auth');
+const mongoose = require("mongoose");
 
 
-
-router.post('/', withAuth, async function(req, res) { 
-    try {
-        const { description, name, price, amount, min, max } = req.body;
-        var product = new Product({description: description, name: name, price: price, amount: amount, min: min, max: max, author: req.user._id});
-        await product.save();
-        res.json(product);
-    } catch (error) {
-        res.status(401).send(error);
-    }
+router.get("/", (req, res, next) => {
+    Product.find()
+      .select("name price _id")
+      .then(docs => {
+        const response = {
+          count: docs.length,
+          products: docs.map(doc => {
+            return {
+              name: doc.name,
+              price: doc.price,
+              _id: doc._id,
+              request: {
+                type: "GET",
+                url: "http://localhost:3000/products/" + doc._id
+              }
+            };
+          })
+        };
+        //   if (docs.length >= 0) {
+        res.status(200).json(response);
+        //   } else {
+        //       res.status(404).json({
+        //           message: 'No entries found'
+        //       });
+        //   }
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).json({
+          error: err
+        });
+      });
+  });
   
-});
-
-router.get('/search', withAuth, async function(req, res) {
-    try {
-        const { query } = req.query;
-        const { id } = req.params;
-        let products = await Product.find({ id }).find({ $text: {$search: query }})
-        res.json(products);
-
-    } catch (error) {
-        res.json({error: error}).status(500)
+  router.post("/", (req, res, next) => {
+    const product = new Product({
+      _id: new mongoose.Types.ObjectId(),
+      name: req.body.name,
+      price: req.body.price
+    });
+    product
+      .save()
+      .then(result => {
+        console.log(result);
+        res.status(201).json({
+          message: "Created product successfully",
+          createdProduct: {
+              name: result.name,
+              price: result.price,
+              _id: result._id,
+              request: {
+                  type: 'GET',
+                  url: "http://localhost:3000/products/" + result._id
+              }
+          }
+        });
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).json({
+          error: err
+        });
+      });
+  });
+  
+  router.get("/:productId", (req, res, next) => {
+    const id = req.params.productId;
+    Product.findById(id)
+      .select('name price _id')
+      .exec()
+      .then(doc => {
+        console.log("From database", doc);
+        if (doc) {
+          res.status(200).json({
+              product: doc,
+              request: {
+                  type: 'GET',
+                  url: 'http://localhost:3000/products'
+              }
+          });
+        } else {
+          res
+            .status(404)
+            .json({ message: "No valid entry found for provided ID" });
+        }
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).json({ error: err });
+      });
+  });
+  
+  router.patch("/:productId", (req, res, next) => {
+    const id = req.params.productId;
+    const updateOps = {};
+    for (const ops of req.body) {
+      updateOps[ops.propName] = ops.value;
     }
-    
-});
-
-router.get('/:id', withAuth, async function(req, res) {
-
-    try {
-        const { id } = req.params;
-        let product = await Product.findById(id)
-        //const is_owner = (user, product) => {
-            
-            //if(JSON.stringify(user._id) == JSON.stringify(product.author._id))
-            //  return true;
-            //else
-              //return false;
-            //}
-            //if(is_owner(req.user, product))
-                res.json(product);
-            //else
-                //res.json({error: error}).status(500);
-
-    } catch (error) {
-                    res.send(error).status(500)
-    }
-
-});
-
-router.get('/', withAuth, async function(req, res) {
-    try {
-        const { id } = req.params;
-        let products = await Product.find({ id })
-        res.send(products)
-    } catch (error) {
-        res.json({error: error}).status(500)
-    }
-});
-
-router.put('/:id', withAuth, async function(req, res) {
-    try {
-        const { description, name, price, amount, min, max } = req.body;
-        const { id } = req.params;
-        var product = await Product.findOneAndUpdate(
-            {_id: id},
-            {$set: {description: description, name: name, price: price, amount: amount, min: min, max: max}},
-            {upsert: true, 'new': true }   
-        )
-        res.json(product);
-    } catch (error) {
-        res.json({error: error}).status(500)
-    }
-});
-
-router.delete('/:id', withAuth, async function(req, res) {
-    
-    try {
-        const { id } = req.params;
-        var product = await Product.findById({_id: id})
-        //const is_owner = (user, product) => {
-            //if(JSON.stringify(user._id) == JSON.stringify(product.author._id))
-             // return true;
-            //else
-             // return false;
-            //}
-        
-        //if(product && is_owner(req.user, product)) {
-            await product.delete();
-            res.json({message: 'OK'}).status(204);   
-        //}else{
-           // res.json({error: 'Forbidden'}).status(403);
-       // }
-    } catch (error) {
-        res.json({error: error}).status(500)
-        
-    }
-});
-
-
-module.exports = router;
+    Product.update({ _id: id }, { $set: updateOps })
+      .exec()
+      .then(result => {
+        res.status(200).json({
+            message: 'Product updated',
+            request: {
+                type: 'GET',
+                url: 'http://localhost:3000/products/' + id
+            }
+        });
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).json({
+          error: err
+        });
+      });
+  });
+  
+  router.delete("/:productId", (req, res, next) => {
+    const id = req.params.productId;
+    Product.remove({ _id: id })
+      .exec()
+      .then(result => {
+        res.status(200).json({
+            message: 'Product deleted',
+            request: {
+                type: 'POST',
+                url: 'http://localhost:3000/products',
+                body: { name: 'String', price: 'Number' }
+            }
+        });
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).json({
+          error: err
+        });
+      });
+  });
+  
+  module.exports = router;

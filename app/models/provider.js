@@ -2,7 +2,7 @@ var mongoose = require('mongoose');
 
 var providerSchema = new mongoose.Schema({
 
-    description: String,
+    description: {type: String, index:true},
     name: String,
     cnpj: Number,
     shopping: String,

@@ -1,16 +1,16 @@
 var mongoose = require('mongoose');
 
-var saleSchema = new mongoose.Schema({
+var orderSchema = new mongoose.Schema({
 
-    client: String,
-    products: {
+    _id: mongoose.Schema.Types.ObjectId,
+    product: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product',
-        required: true
     },
+    quantity: {type: Number, default: 1 },
+
     created_at: {type: Date, default: Date.now},
     update_at: {type: Date, default: Date.now},
 });
 
-saleSchema.index({'products': 'text', 'client': 'text'});
-module.exports = mongoose.model('Sale', saleSchema);
+module.exports = mongoose.model('Order', orderSchema);

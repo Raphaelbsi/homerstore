@@ -7,7 +7,7 @@ const withAuth = require('../../middlewares/auth');
 
 router.post('/', withAuth, async function(req, res) {
     try {
-        const { description, name, cnpj, shopping} = req.body;
+        const { description, name, cnpj, shopping, supply} = req.body;
         var provider = new Provider({description: description, name: name, cnpj: cnpj, shopping: shopping, supply: supply});
         await provider.save();
         res.json(provider);
@@ -23,7 +23,6 @@ router.get('/search', withAuth, async function(req, res) {
         const { id } = req.params;       
         let providers = await Provider.find({ id }).find({ $text: {$search: query }})
         res.json(providers);
-
     } catch (error) {
         res.json({error: error}).status(500)
     }
@@ -60,8 +59,8 @@ router.delete('/:id', withAuth, async function(req, res) {
     try {
         const { id } = req.params;
         var provider = await Provider.findById({_id: id})
-            await provider.delete();
-            res.json({message: 'OK'}).status(204);   
+        await provider.delete();
+        res.json({message: 'OK'}).status(204);   
     } catch (error) {
         res.json({error: error}).status(500)
         

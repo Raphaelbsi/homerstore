@@ -9,6 +9,7 @@ var usersRouter = require('./app/routes/users');
 var productsRouter = require('./app/routes/products');
 var providersRouter = require('./app/routes/providers')
 var salesRouter = require('./app/routes/sales');
+var ordersRouter = require('./app/routes/providers');
 
 var app = express();
 
@@ -22,6 +23,7 @@ app.use('/users', usersRouter);
 app.use('/products', productsRouter);
 app.use('/providers', providersRouter);
 app.use('/sales', salesRouter);
+app.use('/orders', ordersRouter);
 
 
 module.exports = app;
