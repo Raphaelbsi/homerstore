@@ -70,6 +70,39 @@ router.get("/", (req, res, next) => {
         });
       });
   });
+
+  router.patch("/:ordersId", (req, res, next) => {
+    const id = req.params.orderId;
+    const updateOps = {};
+    var map = new Map;
+    map.set(req.body);
+
+    console.log(map);
+    console.log(id);
+
+    for (const ops of map) {
+      updateOps[ops.propName] = ops.value;
+    }
+    Order.update({ _id: id }, 
+      { $set: updateOps }, 
+      {upsert: true, 'new': true })
+      .exec()
+      .then(result => {
+        res.status(200).json({
+            message: 'Orders updated',
+            request: {
+                type: 'GET',
+                url: 'http://localhost:3000/products/' + id
+            }
+        });
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).json({
+          error: err
+        });
+      });
+  });
   
   router.get("/:orderId", (req, res, next) => {
     Order.findById(req.params.orderId)

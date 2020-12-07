@@ -100,12 +100,17 @@ router.get("/", (req, res, next) => {
   router.patch("/:productId", (req, res, next) => {
     const id = req.params.productId;
     const updateOps = {};
+    var map = new Map;
+    map.set(req.body);
 
-    for (const ops of req.body) {
+    for (const ops of map) {
       updateOps[ops.propName] = ops.value;
       console.log(updateOps);
+      console.log(ops);
     }
-    Product.update({ _id: id }, { $set: updateOps })
+    Product.update({ _id: id }, 
+      { $set: updateOps }, 
+      {upsert: true, 'new': true })
       .exec()
       .then(result => {
         res.status(200).json({
