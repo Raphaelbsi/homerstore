@@ -4,10 +4,12 @@ const Product = require('../models/product');
 //const withAuth = require('../../middlewares/auth');
 const mongoose = require("mongoose");
 
+const multer = require('multer');
+const multerConfig = require('../../middlewares/multer');
 
 router.get("/", (req, res, next) => {
     Product.find()
-      .select("name price _id")
+      .select("name price _id nameimg sizeimg keyimg urlimg")
       .then(docs => {
         const response = {
           count: docs.length,
@@ -16,6 +18,10 @@ router.get("/", (req, res, next) => {
               name: doc.name,
               price: doc.price,
               _id: doc._id,
+              nameimg: doc.nameimg,
+              sizeimg: doc.sizeimg,
+              keyimg: doc.keyimg,
+              urlimg: doc.urlimg,
               request: {
                 type: "GET",
                 url: "http://localhost:3000/products/" + doc._id
@@ -39,22 +45,31 @@ router.get("/", (req, res, next) => {
       });
   });
   
-  router.post("/", (req, res, next) => {
+  router.post("/", multer(multerConfig).single('file'),(req, res, next) => {
     const product = new Product({
       _id: new mongoose.Types.ObjectId(),
       name: req.body.name,
-      price: req.body.price
+      price: req.body.price,
+      nameimg: req.file.originalname,
+      sizeimg: req.file.size,
+      keyimg: req.file.filename,
+      urlimg: '', 
     });
     product
       .save()
       .then(result => {
-        console.log(result);
+        console.log(req.file);
         res.status(201).json({
           message: "Created product successfully",
           createdProduct: {
               name: result.name,
               price: result.price,
               _id: result._id,
+              nameimg: result.nameimg,
+              sizeimg: result.sizeimg,
+              keyimg: result.keyimg,
+              urlimg: result.urlimg,
+              createdAt: result.createdAt,
               request: {
                   type: 'GET',
                   url: "http://localhost:3000/products/" + result._id
@@ -73,7 +88,7 @@ router.get("/", (req, res, next) => {
   router.get("/:productId", (req, res, next) => {
     const id = req.params.productId;
     Product.findById(id)
-      .select('name price _id')
+      .select("name price _id nameimg sizeimg keyimg urlimg")
       .exec()
       .then(doc => {
         console.log("From database", doc);
@@ -97,19 +112,38 @@ router.get("/", (req, res, next) => {
       });
   });
   
-  router.patch("/:productId", (req, res, next) => {
+  router.patch("/:productId", multer(multerConfig).single('file'),(req, res, next) => {
     const id = req.params.productId;
-    const updateOps = {};
-    var map = new Map;
-    map.set(req.body);
+    const { name, price } = req.body;
+    const nameimg = req.file.originalname; 
+    const sizeimg = req.file.size;
+    const keyimg = req.file.filename; 
+    const urlimg = req.file.url;
+    //const updateOps = {};
+    //var map = new Map;
+    //var map2 = new Map;
 
-    for (const ops of map) {
-      updateOps[ops.propName] = ops.value;
-      console.log(updateOps);
-      console.log(ops);
-    }
-    Product.update({ _id: id }, 
-      { $set: updateOps }, 
+    //map.set(req.body);
+    //console.log(map);
+    //map2.set(req.file);
+    //console.log(map2);
+    //for (const ops of map) {
+     // updateOps[ops.propName] = ops.value;
+      //console.log(updateOps);
+      //console.log(ops);
+    //}
+      
+
+    Product.updateOne({ _id: id },
+      { $set: {name: name, 
+               price: price, 
+               nameimg: nameimg, 
+               sizeimg: sizeimg,
+               keyimg: keyimg,
+               urlimg: urlimg,
+              }  
+      }, 
+      //{ $set: updateOps }, 
       {upsert: true, 'new': true })
       .exec()
       .then(result => {
@@ -141,6 +175,7 @@ router.get("/", (req, res, next) => {
                 url: 'http://localhost:3000/products',
                 body: { name: 'String', price: 'Number' }
             }
+            
         });
       })
       .catch(err => {
