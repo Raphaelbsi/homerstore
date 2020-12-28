@@ -10,6 +10,7 @@ var orderSchema = new mongoose.Schema({
     },
     quantity: { type: Number, default: 1 },
     cost: { type: Number },
+    discount: { type: Number, default: 0 },
 
     created_at: { type: Date, default: Date.now },
     update_at: { type: Date, default: Date.now },

@@ -9,7 +9,7 @@ const Product = require('../models/product');
 // Handle incoming GET requests to /orders
 router.get("/", (req, res, next) => {
   Order.find()
-    .select("_id product quantity")
+    .select("_id product quantity discount cost")
     .then(docs => {
       const response = {
         count: docs.length,
@@ -18,6 +18,8 @@ router.get("/", (req, res, next) => {
             _id: doc.id,
             product: doc.product,
             quantity: doc.quantity,
+            discount: doc.discount,
+            cost: doc.cost,
             request: {
               type: "GET",
               url: "http://localhost:3000/orders/" + doc._id
@@ -44,13 +46,12 @@ router.post("/", (req, res, next) => {
           message: "Product not found"
         });
       } else {
-        return totalizator(req.body.productId, req.body.quantity).then(total => {
-          console.log("eta Rapaz Cheguei foi aqui no total");
-          console.log(total);
+        return totalizator(req.body.productId, req.body.quantity, req.body.discount).then(total => {
           const order = new Order({
             _id: mongoose.Types.ObjectId(),
             quantity: req.body.quantity,
             product: req.body.productId,
+            discount: req.body.discount,
             cost: total,
           });
           order
@@ -64,6 +65,7 @@ router.post("/", (req, res, next) => {
                   _id: result._id,
                   product: result.product,
                   quantity: result.quantity,
+                  discount: result.discount,
                   cost: result.cost,
                   request: {
                     type: "GET",
@@ -85,24 +87,24 @@ router.post("/", (req, res, next) => {
 
 router.patch("/:orderId", (req, res, next) => {
   const id = req.params.orderId;
-  const { product, quantity } = req.body;
-  console.log(id);
-  console.log(product);
-  console.log(quantity);
+  const { product, quantity, discount } = req.body;
 
-  Order.updateOne({ _id: id },
-    { $set: { product: product, quantity: quantity } },
-    { upsert: true, 'new': true })
-    .exec()
-    .then(result => {
-      res.status(200).json({
-        message: 'Orders updated',
-        request: {
-          type: 'GET',
-          url: 'http://localhost:3000/products/' + id
-        }
-      });
-    })
+  return totalizator(product, quantity, discount).then(total => {
+    Order.updateOne({ _id: id },
+      { $set: { product: product, quantity: quantity, discount: discount, cost: total } },
+      { upsert: true, 'new': true })
+      .exec()
+      .then(result => {
+        res.status(200).json({
+          message: 'Orders updated',
+          request: {
+            type: 'GET',
+            url: 'http://localhost:3000/products/' + id
+          }
+        });
+      })
+  })
+
     .catch(err => {
       console.log(err);
       res.status(500).json({
