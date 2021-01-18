@@ -21,5 +21,4 @@ function totalizator(product, quantity, discount) {
 
 }
 
-
 module.exports = totalizator;
