@@ -38,7 +38,6 @@ router.get("/", (req, res, next) => {
 
 router.post("/", (req, res, next) => {
   Product.findById(req.body.productId)
-    .select("_id")
     .exec()
     .then(product => {
       if (!product) {
@@ -50,7 +49,7 @@ router.post("/", (req, res, next) => {
           const order = new Order({
             _id: mongoose.Types.ObjectId(),
             quantity: req.body.quantity,
-            product: req.body.productId,
+            product: product.name,
             discount: req.body.discount,
             cost: total,
           });

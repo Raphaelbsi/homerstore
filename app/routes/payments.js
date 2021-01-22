@@ -44,18 +44,6 @@ router.get("/success", (req, res, next) => {
     const status = req.query.collection_status;
     const preference_id = req.query.preference_id;
     const payments_method = req.query.payment_type;
-    console.log("tentando recuperar a query ID");
-    console.log(id);
-    console.log("tentando recuperar a query Status");
-    console.log(status);
-    console.log("tentando recuperar a query preferenceID");
-    console.log(preference_id);
-    console.log("tentando recuperar a query payment_type");
-    console.log(payments_method);
-
-
-    console.log("Tentando Atualizar Pagamento");
-
     Payment.updateOne({ payment_preference: preference_id },
         {
             $set:
@@ -69,7 +57,67 @@ router.get("/success", (req, res, next) => {
         { upsert: true, 'new': true })
         .exec()
         .then(() => {
-            res.status(200).json({message: 'Payments Updated'});
+            res.status(200).json({ message: 'Payments Updated' });
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                error: err
+            });
+        });
+
+
+});
+
+router.get("/pending", (req, res, next) => {
+    const id = req.query.collection_id;
+    const status = req.query.collection_status;
+    const preference_id = req.query.preference_id;
+    const payments_method = req.query.payment_type;
+    Payment.updateOne({ payment_preference: preference_id },
+        {
+            $set:
+            {
+                payment_id: id,
+                payment_method: payments_method,
+                payment_status: status,
+            }
+
+        },
+        { upsert: true, 'new': true })
+        .exec()
+        .then(() => {
+            res.status(200).json({ message: 'Payments Updated' });
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                error: err
+            });
+        });
+
+
+});
+
+router.get("/failure", (req, res, next) => {
+    const id = req.query.collection_id;
+    const status = req.query.collection_status;
+    const preference_id = req.query.preference_id;
+    const payments_method = req.query.payment_type;
+    Payment.updateOne({ payment_preference: preference_id },
+        {
+            $set:
+            {
+                payment_id: id,
+                payment_method: payments_method,
+                payment_status: status,
+            }
+
+        },
+        { upsert: true, 'new': true })
+        .exec()
+        .then(() => {
+            res.status(200).json({ message: 'Payments Updated' });
         })
         .catch(err => {
             console.log(err);

@@ -22,11 +22,10 @@ mercadopago.configurations.setAccessToken(process.env.MP_ACCESS_TOKEN);
 // }
 
 function pay(order) {
-  console.log(order);
   const purchaseOrder = {
     items: [
       item = {
-        title: order._id.toString(),
+        title: order.product.toString(),
         description: "description",
         quantity: 1,
         currency_id: 'BRL',

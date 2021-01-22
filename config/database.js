@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-mongoose.connect('mongodb://localhost/homerstore', {
+mongoose.connect('mongodb://0.0.0.0:27017/homerstore', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   useCreateIndex: true
