@@ -22,7 +22,6 @@ mercadopago.configurations.setAccessToken(process.env.MP_ACCESS_TOKEN);
 // }
 
 function pay(order) {
-  console.log(order);
   const purchaseOrder = {
     items: [
       item = {
