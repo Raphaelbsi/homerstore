@@ -13,6 +13,8 @@ router.post("/", (req, res, next) => {
     Order.findById(req.body.orderId)
         .exec()
         .then(order => {
+            console.log("Tentando visualizar meu order");
+            console.log(order);
             if (!order) {
                 return res.status(404).json({
                     message: "Order not found"
@@ -25,7 +27,6 @@ router.post("/", (req, res, next) => {
                         payment_link: preferences.body.init_point,
                     });
                     return payment.save().then(() => {
-                        console.log(preferences.body);
                         return res.send(preferences.body.init_point)
                     });
 
@@ -118,6 +119,7 @@ router.get("/failure", (req, res, next) => {
         .exec()
         .then(() => {
             res.status(200).json({ message: 'Payments Updated' });
+            res.status(200).json({message: 'Payment Updated'});
         })
         .catch(err => {
             console.log(err);
